@@ -14,7 +14,9 @@ def hash_file(file_path):
                 h.update(chunk)
 
             # Return the hexadecimal digest of the hash
-            return h.hexdigest()
+            h.digest()
+            print(h.digest_size)
+            return h
     except FileNotFoundError:
         print(f"Error: File '{file_path}' not found.")
     except Exception as e:
