@@ -2,40 +2,42 @@ from Crypto.Random import get_random_bytes
 from enc_dec.symmetric import Symmetric
 from base64 import b64encode, b64decode
 import binascii
-
-def are_files_equal(file1_path, file2_path):
-    try:
-        with open(file1_path, 'rb') as file1, open(file2_path, 'rb') as file2:
-            content1 = file1.read()
-            content2 = file2.read()
-
-            # Compare the content
-            return content1 == content2
-
-    except FileNotFoundError:
-        print("One or both files not found.")
-        return False
+from signature.sign_verify import generate_key_pair, sign_message, verify_signature
+from utils import are_files_equal, genSymKey
 
 def main():
+    
+    # -----------------------------------------
+    # -------------- aes enc/dec --------------
+    # -----------------------------------------
     data = b'secret data'
-    # Bkey = get_random_bytes(16)  # random key
-    # hexaKey = binascii.hexlify(Bkey).decode('utf-8')
-    # outKeyFile = open('keys/secKey.txt', "w")
-    # outKeyFile.write(hexaKey)
-    # print(hexaKey)
-    aes_handler = Symmetric('keys/secKey.txt')
+    aes_handler = Symmetric('keys/symKey.txt')
 
-    # Encrypt
+    # AES Encrypt
     encrypted_data = aes_handler.aes_encrypt(data)
-    print("Encrypted Data:", binascii.hexlify(encrypted_data).decode('utf-8'))
+    print("Encrypted Data:", binascii.hexlify(encrypted_data).decode('utf-8'))  #convert output to hexadecimal
 
-    # Decrypt
+    # AES Decrypt
     dec_data = aes_handler.aes_decrypt(encrypted_data)
     
     if data.decode('utf-8') == dec_data:
         print('correct')
     else:
         print('incorrect')
+    
+    # -----------------------------------------
+    # -------------- sign verify --------------
+    # -----------------------------------------
+    private_key, public_key = generate_key_pair()
+
+    message = b"This is a test message."
+
+    # Sign the message
+    signature = sign_message(message, private_key)
+    print("Signature:", binascii.hexlify(signature).decode('utf-8'))
+
+    # Verify the signature
+    verify_signature(message, signature, public_key)
 
 if __name__ == "__main__":
     main()
