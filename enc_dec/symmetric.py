@@ -22,6 +22,6 @@ class Symmetric:
         try:
             cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
             pt = unpad(cipher.decrypt(cipherText), AES.block_size)
-            print("The message was: ", pt.decode('utf-8'))
+            return pt.decode('utf-8')
         except (ValueError, KeyError):
             print("Incorrect decryption")
