@@ -2,13 +2,6 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 
-def generate_key_pair():
-    # Generate a new RSA key pair (2048 bits)
-    key = RSA.generate(2048)
-    private_key = key.export_key()
-    public_key = key.publickey().export_key()
-    return private_key, public_key
-
 def sign_message(message, private_key):
     # Load the private key
     private_key = RSA.import_key(private_key)

@@ -9,18 +9,30 @@ def are_files_equal(file1_path, file2_path):
             content2 = file2.read()
 
             # Compare the content
-            return content1 == content2
+            if (content1 == content2):
+                return "The Two Files Are Identical."
+            else:
+                return "The Two Files Are Different."
 
     except FileNotFoundError:
-        print("One or both files not found.")
-        return False
+        return "One or both files not found."
     
-# -----------------------------------------
-# -------- gen & save symmetric key -------
-# -----------------------------------------
-def genSymKey():
-    Bkey = get_random_bytes(16)                         # random key
-    hexaKey = binascii.hexlify(Bkey).decode('utf-8')    #from bytes to hexadecimal
-    outKeyFile = open('keys/symKey.txt', "w")           #save key to file
-    outKeyFile.write(hexaKey)
-    print(hexaKey)
+def save_key_to_file(byteKey, keyFilePath):
+    with open(keyFilePath, 'w') as f:
+        hexKey = binascii.hexlify(byteKey).decode('utf-8')      #convert output to hexadecimal
+        f.write(hexKey)
+
+def load_key_from_file(keyFilePath):
+    with open(keyFilePath, "r") as key_file:
+        hexKey = key_file.read()
+    byteKey = bytes.fromhex(hexKey)     #convert from hex to byte
+    return byteKey
+
+def load_data_from_file(filePath):
+    with open(filePath, 'rb') as dataFile:
+        data = dataFile.read()
+    return data
+
+def save_data_to_file(data, filePath):
+    with open(filePath, 'wb') as outputFile:
+        outputFile.write(data)
