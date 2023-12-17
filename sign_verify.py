@@ -23,8 +23,8 @@ def verify_signature(message, signature, public_key):
     try:
         # Verify the signature using the public key
         pkcs1_15.new(public_key).verify(h, signature)
-        print("Signature is valid.")
+        return True
     except (ValueError, TypeError):
-        print("Signature is invalid.")
+        return False
     
 

@@ -1,7 +1,7 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 
-def generate_key_pair():
+def generate_RSA_key_pair():
     # Generate a new RSA key pair (2048 bits)
     key = RSA.generate(2048)
     private_key = key.export_key()
