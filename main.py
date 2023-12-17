@@ -121,6 +121,9 @@ class FileTransferApp:
         label = tk.Label(self.current_frame, text="Choose Your Encryption Method", font=self.custom_font)
         label.pack(pady=20)
 
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_sender_frame)
+        back_button.pack(pady=10)
+
         aes_button = tk.Button(self.current_frame, text="AES Encryption", font=self.custom_font, command=self.create_aes_encrypt_frame)
         aes_button.pack(pady=10)
 
@@ -136,7 +139,7 @@ class FileTransferApp:
         label = tk.Label(self.current_frame, text="AES File Encryption", font=self.custom_font)
         label.pack(pady=20)
 
-        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_sender_frame)
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_encrypt_options_frame)
         back_button.pack(pady=10)
 
         choose_file_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_file)
@@ -176,7 +179,7 @@ class FileTransferApp:
         label = tk.Label(self.current_frame, text="AES File Encryption", font=self.custom_font)
         label.pack(pady=20)
 
-        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_sender_frame)
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_encrypt_options_frame)
         back_button.pack(pady=10)
 
         choose_file_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_file)
