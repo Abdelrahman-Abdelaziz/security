@@ -47,9 +47,9 @@ def verify_with_public_key(public_key, decrypted_hash, hashed_message):
             ),
             hashes.SHA256()
         )
-        print("Hash verification successful.")
+        return True
     except Exception as e:
-        print(f"Hash verification failed: {e}")
+        return False
 
 def encrypt_with_symmetric_key(sym_key, plaintext):
     cipher = Cipher(algorithms.AES(sym_key), modes.CFB(b'\0' * 16), backend=default_backend())

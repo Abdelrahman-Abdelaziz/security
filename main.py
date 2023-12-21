@@ -82,7 +82,7 @@ class FileTransferApp:
         Sign_button = tk.Button(self.current_frame, text="Sign File", font=self.custom_font, command=self.create_sign_frame)
         Sign_button.pack(pady=10)
 
-        SignEnc_button = tk.Button(self.current_frame, text="Sign & Encrypt File", font=self.custom_font, command=self.create_sign_frame)
+        SignEnc_button = tk.Button(self.current_frame, text="Sign & Encrypt File", font=self.custom_font, command=self.create_sign_encrypt_frame)
         SignEnc_button.pack(pady=10)
 
         self.current_frame.pack()
@@ -106,7 +106,7 @@ class FileTransferApp:
         Sign_button = tk.Button(self.current_frame, text="Verify File", font=self.custom_font, command=self.create_verify_frame)
         Sign_button.pack(pady=10)
 
-        Sign_button = tk.Button(self.current_frame, text="Decrypt & Verify File", font=self.custom_font, command=self.create_sign_frame)
+        Sign_button = tk.Button(self.current_frame, text="Verify & Decrypt File", font=self.custom_font, command=self.create_verify_decrypt_frame)
         Sign_button.pack(pady=10)
 
 
@@ -401,7 +401,7 @@ class FileTransferApp:
         self.selected_file_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
         self.selected_file_label.pack(pady=10)
 
-        # Chose signature
+        # Choose signature
         choose_signature_button = tk.Button(self.current_frame, text="Choose Signature File", font=self.custom_font, command=self.choose_signature)
         choose_signature_button.pack(pady=10)
 
@@ -409,7 +409,7 @@ class FileTransferApp:
         self.selected_signature_label.pack(pady=10)
 
         # Choose a file that has the public key
-        self.choose_key_button = tk.Button(self.current_frame, text="Choose Public Key File", font=self.custom_font, command=self.choose_key_file)
+        self.choose_key_button = tk.Button(self.current_frame, text="Public Key File", font=self.custom_font, command=self.choose_key_file)
         self.choose_key_button.pack(pady=10)
 
         self.selected_key_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font)
@@ -420,7 +420,121 @@ class FileTransferApp:
         decrypt_key_button.pack(pady=10)
 
         self.current_frame.pack()
-       
+    
+    def create_sign_encrypt_frame(self):
+        self.current_frame.destroy()
+        self.current_frame = tk.Frame(self.root)
+
+        # Section 1: Frame Title
+        label = tk.Label(self.current_frame, text="File Signing & Encryption", font=self.custom_font)
+        label.pack(pady=20)
+
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_sender_frame)
+        back_button.pack(pady=10)
+
+
+        # Section 2: Uploading the file that has the message
+        choose_file_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_file)
+        choose_file_button.pack(pady=10)
+
+        self.selected_file_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
+        self.selected_file_label.pack(pady=10)
+
+
+        # Section 3: To choose type of entry of symmetric key
+        # Radio buttons for choosing key generation or manual entry for SYMMETRIC KEY
+        self.symmetric_label = tk.Label(self.current_frame, text="Symmetric Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.symmetric_label.pack(pady=5)
+
+        self.key_choice_var = tk.IntVar(value=1)  # Set the default value to 1 (Generate Key)
+        generate_key_radio = tk.Radiobutton(self.current_frame, text="Generate Key", font=self.custom_font, variable=self.key_choice_var, value=1)
+        generate_key_radio.pack(pady=5)
+        enter_key_radio = tk.Radiobutton(self.current_frame, text="Enter Key", font=self.custom_font, variable=self.key_choice_var, value=2)
+        enter_key_radio.pack(pady=5)
+
+        # Choose a file that has the key
+        self.choose_key_button = tk.Button(self.current_frame, text="Choose Key File", font=self.custom_font, state=tk.DISABLED, command=self.choose_key_file)
+        self.choose_key_button.pack(pady=10)
+
+        self.selected_key_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font, state=tk.DISABLED)
+        self.selected_key_label.pack(pady=10)
+
+
+
+        # Section 4: To choose type of entry of Assymetric Key
+        # Radio buttons for choosing key generation or manual entry for SYMMETRIC KEY
+        self.asymmetric_label = tk.Label(self.current_frame, text="Public Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.asymmetric_label.pack(pady=5)
+
+        self.key_choice_var_rsa = tk.IntVar(value=1)  # Set the default value to 1 (Generate Key)
+        generate_key_radio = tk.Radiobutton(self.current_frame, text="Generate Key Pair", font=self.custom_font, variable=self.key_choice_var_rsa, value=1)
+        generate_key_radio.pack(pady=5)
+        enter_key_radio = tk.Radiobutton(self.current_frame, text="Enter Public Key", font=self.custom_font, variable=self.key_choice_var_rsa, value=2)
+        enter_key_radio.pack(pady=5)
+
+        # Choose a file that has the key
+        self.choose_key2_button = tk.Button(self.current_frame, text="Choose Key File", font=self.custom_font, state=tk.DISABLED, command=self.choose_key2_file)
+        self.choose_key2_button.pack(pady=10)
+
+        self.selected_key2_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font, state=tk.DISABLED)
+        self.selected_key2_label.pack(pady=10)
+
+        # Encryption Process for AES
+        encrypt_key_button = tk.Button(self.current_frame, text="Sign & Encrypt File", font=self.custom_font, command=self.sign_encrypt_button)
+        encrypt_key_button.pack(pady=10)
+
+        # Add a trace to the variable to call a function when its value changes
+        self.key_choice_var.trace_add("write", self.update_key_entry_state)
+        self.key_choice_var_rsa.trace_add("write", self.update_key_entry_state)
+
+
+        self.current_frame.pack()
+
+    def create_verify_decrypt_frame(self):
+        self.current_frame.destroy()
+        self.current_frame = tk.Frame(self.root)
+
+        # Section 1: Title and back button
+        label = tk.Label(self.current_frame, text="File Verifying & Decryption", font=self.custom_font)
+        label.pack(pady=20)
+
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_receiver_frame)
+        back_button.pack(pady=10)
+
+        # Section 2: Uploading the file to be decrypted with AES
+        choose_file_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_file)
+        choose_file_button.pack(pady=10)
+
+        self.selected_file_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
+        self.selected_file_label.pack(pady=10)
+
+        # Section 3: Uploading the symmetric key
+        self.symmetric_label = tk.Label(self.current_frame, text="Symmetric Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.symmetric_label.pack(pady=5)
+
+        choose_key_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_key_file)
+        choose_key_button.pack(pady=10)
+
+        self.selected_key_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
+        self.selected_key_label.pack(pady=10)
+
+        # Section 4: Uploading the public key
+        self.asymmetric_label = tk.Label(self.current_frame, text="Public Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.asymmetric_label.pack(pady=5)
+
+        # Choose a file that has the key
+        self.choose_key2_button = tk.Button(self.current_frame, text="Choose Key File", font=self.custom_font, command=self.choose_key2_file)
+        self.choose_key2_button.pack(pady=10)
+
+        self.selected_key2_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font)
+        self.selected_key2_label.pack(pady=10)
+
+        # Button to Decrypt
+        decrypt_key_button = tk.Button(self.current_frame, text="Verify & Decrypt File", font=self.custom_font, command=self.verify_decrypt_button)
+        decrypt_key_button.pack(pady=10)
+
+        self.current_frame.pack()
+
     ########################################################################################################################
     ####################                            GUI HELP FUNCTIONS                                  ####################
     ########################################################################################################################
@@ -692,6 +806,112 @@ class FileTransferApp:
             messagebox.showinfo("Signature", "Signature is verified succesfully and is valid!")
         else:
             messagebox.showinfo("Signature", "Signature verification failed and isn't valid!")
+
+    ###################################
+    ## To Sign and Encrypt a message ##
+    ###################################
+    def sign_encrypt_button(self):
+        key_choice_aes = self.key_choice_var.get() # To track if user wants to generate or enter a symmetric key
+        key_choice_rsa = self.key_choice_var_rsa.get() # To track if user wants to generate or enter a symmetric key
+
+        ## If user didnt upload file, EXIT!
+        if self.file_not_exist(self.file_path):
+            return
+        
+        ## To get user's choice for Symmetric key
+        if key_choice_aes == 1:  # Generate Key
+            aes_key = get_random_bytes(16)
+            messagebox.showinfo("Key Generated", f"Generated Key: {aes_key}")
+            save_key_to_file(aes_key, 'keys/symKey.pem')
+        elif key_choice_aes == 2:  # Use Entered Key
+            if self.file_not_exist(self.key_path):
+                return
+            aes_key = load_key_from_file(self.key_path[0])
+            messagebox.showinfo("Key Entered", f"Entered Key: {aes_key}")
+        else:
+            messagebox.showerror("Error", "Please choose a key option.")
+            self.create_aes_encrypt_frame()
+            return
+
+        ## To get user's choice for Asymetric key
+        if key_choice_rsa == 1:  # Generate Key Pairs
+            private_key, public_key = generate_RSA_key_pair()
+            save_key_to_file(private_key, 'keys/private.pem')
+            save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+
+        elif key_choice_rsa == 2:  # Use Entered Private Key
+            if self.file_not_exist(self.key_path):
+                return
+            private_key = load_key_from_file(self.key_path[0])
+
+            # Extract and save the public key
+            public_key = RSA.import_key(private_key).publickey().export_key()
+
+            save_key_to_file(public_key, 'keys/public.pem')
+
+            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
+        else:
+            messagebox.showerror("Error", "Please choose a key option.")
+            self.create_aes_encrypt_frame()
+            return
+        
+        # Load data from file to be encrypted
+        original_message = load_data_from_file(self.file_path) 
+
+        # Step 3: Calculate hash and encrypt with private key
+        hashed_message = hash_message(original_message)
+        encrypted_hash = encrypt_hash_with_private_key(private_key, hashed_message)
+
+        # Step 4: Append the encrypted hash to the original message
+        combined_message = original_message + encrypted_hash
+
+        # Step 6: Encrypt the combined message with the symmetric key
+        encrypted_combined_message = aes_encrypt(combined_message, aes_key)
+
+        # Save data and all keys
+        save_data_to_file(encrypted_combined_message, f"outputs/{self.file}.enc")
+        messagebox.showinfo("Success", "File Signing & Encryption was successful.\nYou will find the keys at ./keys folder.\nEnc data in ./outputs.")
+
+    ####################################################################
+    ## To DEcrypt files using AES and ENcrypt symmetric key using RSA ##
+    ####################################################################
+    def verify_decrypt_button(self):
+        ## If user didnt upload file, EXIT!
+        if self.file_not_exist(self.file_path):
+            return
+        ## If user didnt upload AES symmetric key, EXIT!
+        if self.file_not_exist(self.key_path):
+            return
+        ## If user didnt upload Public key, EXIT!
+        if self.file_not_exist(self.key2_path):
+            return
+        
+        # Loading the keys for decryption process
+        aes_key = load_key_from_file(self.key_path[0])
+        public_key = load_key_from_file(self.key2_path[0])
+
+        # Loading Decrypted data from file
+        encrypted_combined_message = load_data_from_file(self.file_path)
+
+        # Verifying & Decryption
+        decrypted_combined_message = aes_decrypt(encrypted_combined_message, aes_key)
+        decrypted_message = decrypted_combined_message[:-256]  # Remove the encrypted hash
+        decrypted_hash = decrypted_combined_message[-256:]    # Extract the encrypted hash
+
+        hashed_message = hash_message(decrypted_message)
+
+        # Verify the hash
+        if verify_with_public_key(public_key, decrypted_hash, hashed_message):
+            messagebox.showinfo("Success", "Signature Verified Successfully")
+        else:
+            messagebox.showerror("Error", "Signature verification wasn't successful")
+        # Saving file
+        self.file = self.file.replace(".enc", "")
+        save_data_to_file(decrypted_message, f"outputs/{self.file}")
+        messagebox.showinfo("Success", "File Verifying & Decryption was successful.\nDec data in ./outputs.")
 
 if __name__ == "__main__":
     root = tk.Tk()

@@ -5,24 +5,33 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
+from utils import *
 
-def generate_self_signed_certificate():
-    # Generate a new RSA private key
-    private_key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-        backend=default_backend()
+def generate_self_signed_certificate(private_key_bytes, ca_pri_key, subject_info):
+    
+    # private key of client
+    private_key = serialization.load_pem_private_key(
+    private_key_bytes,
+    password=None,                  # If the private key is password-protected, provide the password here
+    backend=default_backend()
+    )
+    
+    # private key of certificate authority for signature
+    ca_priKey = serialization.load_pem_private_key(
+    ca_pri_key,
+    password=None,                  # If the private key is password-protected, provide the password here
+    backend=default_backend()
     )
     
     pubKey = private_key.public_key()
     
     # Define the subject of the certificate (information about the entity being certified)
     subject = x509.Name([
-        x509.NameAttribute(x509.NameOID.COUNTRY_NAME, u"EG"),
-        x509.NameAttribute(x509.NameOID.STATE_OR_PROVINCE_NAME, u"Cairo"),
-        x509.NameAttribute(x509.NameOID.LOCALITY_NAME, u"Abdo Basha"),
-        x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, u"Ain Shams University"),
-        x509.NameAttribute(x509.NameOID.COMMON_NAME, u"Bob"),
+        x509.NameAttribute(x509.NameOID.COUNTRY_NAME, subject_info[0]),                            #EG
+        x509.NameAttribute(x509.NameOID.STATE_OR_PROVINCE_NAME, subject_info[1]),               #Cairo
+        x509.NameAttribute(x509.NameOID.LOCALITY_NAME, subject_info[2]),                   #Abdo Basha
+        x509.NameAttribute(x509.NameOID.ORGANIZATION_NAME, subject_info[3]),     #Ain Shams University
+        x509.NameAttribute(x509.NameOID.COMMON_NAME, subject_info[4]),                            #Bob
     ])
 
     # Set certificate details
@@ -42,7 +51,7 @@ def generate_self_signed_certificate():
         x509.BasicConstraints(ca=True, path_length=None),
         critical=True
     ).sign(
-        private_key, hashes.SHA256(), default_backend()
+        ca_priKey, hashes.SHA256(), default_backend()
     )
 
     # Serialize private key to PEM format
@@ -57,11 +66,15 @@ def generate_self_signed_certificate():
         encoding=serialization.Encoding.PEM
     )
 
-    return private_key_pem, certificate_pem, pubKey
+    return private_key_pem, certificate_pem
 
 if __name__ == "__main__":
+    
+    kys = load_key_from_file('keys/private.pem')
+    kkkkk = load_key_from_file('keys/public.pem')
+    
     # Generate a self-signed X.509 certificate and private key
-    private_key, certificate, pubKey = generate_self_signed_certificate()
+    private_key, certificate = generate_self_signed_certificate(kys)
 
     # Print the private key
     print("Private Key:")
@@ -71,6 +84,8 @@ if __name__ == "__main__":
     print("\nCertificate:")
     print(certificate)
     
+    save_data_to_file(certificate, 'outputs/cert.pem')
+    
     cert = x509.load_pem_x509_certificate(certificate, default_backend())
     
     public_key = cert.public_key()
@@ -78,9 +93,7 @@ if __name__ == "__main__":
     encoding=serialization.Encoding.PEM,
     format=serialization.PublicFormat.SubjectPublicKeyInfo)
     
-    pub = pubKey.public_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo)
     print('\n')
     print(public_key_pem)
-    print(pub)
+    print('\n')
+    print(kkkkk)
