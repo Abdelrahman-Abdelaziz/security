@@ -6,6 +6,8 @@ from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from utils import *
+from enc_dec.asymmetric import *
+import os
 
 def generate_self_signed_certificate(private_key_bytes, ca_pri_key, subject_info):
     
@@ -66,7 +68,39 @@ def generate_self_signed_certificate(private_key_bytes, ca_pri_key, subject_info
         encoding=serialization.Encoding.PEM
     )
 
-    return private_key_pem, certificate_pem
+    return certificate_pem
+
+def certification(user_pri_key, user_info):
+    ca_keys_directory = "Certificate/CA_keys"
+    
+    if not os.path.exists(ca_keys_directory):
+        os.makedirs(ca_keys_directory)
+        CA_private_key,CA_public_key = generate_RSA_key_pair()
+        save_key_to_file(CA_private_key, f'{ca_keys_directory}/CA_private.pem')
+        save_key_to_file(CA_public_key, f'{ca_keys_directory}/CA_public.pem')
+
+    else:
+        CA_private_key_path = os.path.join(ca_keys_directory, "CA_private.pem")
+        CA_public_key_path = os.path.join(ca_keys_directory, "CA_public.pem")
+
+        if os.path.exists(CA_private_key_path) and os.path.exists(CA_public_key_path):
+            CA_private_key = load_key_from_file(CA_private_key_path)
+            CA_public_key = load_key_from_file(CA_public_key_path)
+
+        # If one of the keys dont exist. generate new pair    
+        else:
+            CA_private_key,CA_public_key = generate_RSA_key_pair()
+            save_key_to_file(CA_private_key, f'{ca_keys_directory}/CA_private.pem')
+            save_key_to_file(CA_public_key, f'{ca_keys_directory}/CA_public.pem')
+    
+    certificate = generate_self_signed_certificate(user_pri_key, CA_private_key, user_info)
+
+    return CA_private_key, CA_public_key, certificate
+
+
+    
+        
+    
 
 if __name__ == "__main__":
     

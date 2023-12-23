@@ -13,6 +13,7 @@ import sys
 from part3 import *
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
+from Certificate.certificate import *
 import os
 
 
@@ -63,6 +64,9 @@ class FileTransferApp:
 
         receiver_button = tk.Button(self.current_frame, text="Receiver", font=self.custom_font, command=self.create_receiver_frame)
         receiver_button.pack(pady=10)
+
+        certificate_button = tk.Button(self.current_frame, text="Generate Certificate", font=self.custom_font, command=self.create_certificate_frame)
+        certificate_button.pack(pady=10)
 
         self.current_frame.pack()
 
@@ -535,6 +539,102 @@ class FileTransferApp:
 
         self.current_frame.pack()
 
+    def create_certificate_frame(self):
+        self.current_frame.destroy()
+        self.current_frame = tk.Frame(self.root)
+
+        # Section 1: Title and back button
+        label = tk.Label(self.current_frame, text="Certificate Generation", font=self.custom_font)
+        label.pack(pady=20)
+
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_main_frame)
+        back_button.pack(pady=10)
+
+        # Label and Entry for Field 1
+        frame1 = tk.Frame(self.current_frame)
+        frame1.pack(side="top", pady=(10, 0), fill="x")
+
+        label1 = tk.Label(frame1, text="Country:             ")
+        label1.pack(side="left", padx=(10, 5))
+
+        self.country = tk.Entry(frame1)
+        self.country.pack(side="left", padx=(0, 10))
+
+        desc1 = tk.Label(self.current_frame, text="Expects only 2 letters in uppercase. EX: EG")
+        desc1.pack(side="top", pady=(0, 10), padx=10, anchor="w")
+
+        # Label and Entry for Field 2
+        frame2 = tk.Frame(self.current_frame)
+        frame2.pack(side="top", pady=(10, 0), fill="x")
+
+        label2 = tk.Label(frame2, text="State/Province:  ")
+        label2.pack(side="left", padx=(10, 5))
+
+        self.state_or_province = tk.Entry(frame2)
+        self.state_or_province.pack(side="left", padx=(0, 10))
+
+        desc2 = tk.Label(self.current_frame, text="Ex: Cairo")
+        desc2.pack(side="top", pady=(0, 10), padx=10, anchor="w")
+
+        # Label and Entry for Field 3
+        frame3 = tk.Frame(self.current_frame)
+        frame3.pack(side="top", pady=(10, 0), fill="x")
+
+        label3 = tk.Label(frame3, text="Locality:              ")
+        label3.pack(side="left", padx=(10, 5))
+
+        self.locality = tk.Entry(frame3)
+        self.locality.pack(side="left", padx=(0, 10))
+
+        desc3 = tk.Label(self.current_frame, text="Ex: Abdo Basha")
+        desc3.pack(side="top", pady=(0, 10), padx=10, anchor="w")
+
+        # Label and Entry for Field 4
+        frame4 = tk.Frame(self.current_frame)
+        frame4.pack(side="top", pady=(10, 0), fill="x")
+
+        label4 = tk.Label(frame4, text="Organization:     ")
+        label4.pack(side="left", padx=(10, 5))
+
+        self.organization = tk.Entry(frame4)
+        self.organization.pack(side="left", padx=(0, 10))
+
+        desc4 = tk.Label(self.current_frame, text="Ex: Ain Shams University")
+        desc4.pack(side="top", pady=(0, 10), padx=10, anchor="w")
+
+        # Label and Entry for Field 5
+        frame5 = tk.Frame(self.current_frame)
+        frame5.pack(side="top", pady=(10, 0), fill="x")
+
+        self.common_name = tk.Label(frame5, text="Common Name:")
+        self.common_name.pack(side="left", padx=(10, 5))
+
+        self.organization = tk.Entry(frame5)
+        self.organization.pack(side="left", padx=(0, 10))
+
+        desc5 = tk.Label(self.current_frame, text="Ex: Ahmed")
+        desc5.pack(side="top", pady=(0, 10), padx=10, anchor="w")
+        
+        # Radio buttons for choosing key generation or manual entry
+        self.key_choice_var = tk.IntVar(value=1)  # Set the default value to 1 (Generate Key)
+        generate_key_radio = tk.Radiobutton(self.current_frame, text="Generate Key Pairs", font=self.custom_font, variable=self.key_choice_var, value=1)
+        generate_key_radio.pack(pady=5)
+        enter_key_radio = tk.Radiobutton(self.current_frame, text="Enter Private Key", font=self.custom_font, variable=self.key_choice_var, value=2)
+        enter_key_radio.pack(pady=5)
+
+        # Choose a file that has the key
+        self.choose_key_button = tk.Button(self.current_frame, text="Choose Key File", font=self.custom_font, state=tk.DISABLED, command=self.choose_key_file)
+        self.choose_key_button.pack(pady=10)
+
+        self.selected_key_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font, state=tk.DISABLED)
+        self.selected_key_label.pack(pady=10)
+
+        # Submit button
+        submit_button = tk.Button(self.current_frame, text="Generate Certificate", command=self.generate_certificate)
+        submit_button.pack(side="top", pady=(10, 0))
+
+        self.current_frame.pack()
+
     ########################################################################################################################
     ####################                            GUI HELP FUNCTIONS                                  ####################
     ########################################################################################################################
@@ -578,7 +678,7 @@ class FileTransferApp:
 
     def file_not_exist(self, file_path):
         if file_path is None:
-            messagebox.showinfo("File Manager", "Please select required files")
+            messagebox.showerror("File Manager", "Please select required files")
             self.create_main_frame()
             return True
     ########################################################################################################################
@@ -912,6 +1012,55 @@ class FileTransferApp:
         self.file = self.file.replace(".enc", "")
         save_data_to_file(decrypted_message, f"outputs/{self.file}")
         messagebox.showinfo("Success", "File Verifying & Decryption was successful.\nDec data in ./outputs.")
+    ############################
+    ## Certificate Generation ##
+    ############################
+    def generate_certificate(self):
+        key_choice = self.key_choice_var.get() # To track if user wants to generate or enter a key
+        
+
+        ## If user didnt upload file, EXIT!
+        if self.file_not_exist(self.file_path):
+            return
+        
+        if key_choice == 1:  # Generate Key Pairs
+            private_key, public_key = generate_RSA_key_pair()
+            save_key_to_file(private_key, 'keys/private.pem')
+            save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+
+        elif key_choice == 2:  # Use Entered Private Key
+            if self.file_not_exist(self.key_path):
+                return
+            private_key = load_key_from_file(self.key_path[0])
+
+            # Extract and save the public key
+            public_key = RSA.import_key(private_key).publickey().export_key()
+
+            save_key_to_file(public_key, 'keys/public.pem')
+
+            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
+            messagebox.showinfo("Public Key", "Public key is saved in keys folder")
+        else:
+            messagebox.showerror("Error", "Please choose a key option.")
+            self.create_aes_encrypt_frame()
+            return
+
+        
+        # Generate a self-signed X.509 certificate and private key
+        private_key, certificate = generate_self_signed_certificate(kys)
+        
+        save_data_to_file(certificate, 'outputs/cert.pem')
+        
+        cert = x509.load_pem_x509_certificate(certificate, default_backend())
+        
+        public_key = cert.public_key()
+        public_key_pem = public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        save_data_to_file(signature, f"outputs/{self.file}.bin")
 
 if __name__ == "__main__":
     root = tk.Tk()

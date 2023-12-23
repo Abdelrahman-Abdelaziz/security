@@ -22,7 +22,6 @@ def are_files_equal(file1_path, file2_path):
 def save_key_to_file(byteKey, keyFilePath):
     # Extract the directory and filename from the given file path
     dirname = os.path.dirname(keyFilePath)
-
     # Check if the directory exists, create it if not
     if not os.path.exists(dirname):
         os.makedirs(dirname)
@@ -32,6 +31,7 @@ def save_key_to_file(byteKey, keyFilePath):
         f.write(hexKey)
 
 def load_key_from_file(keyFilePath):
+    print(keyFilePath)
     with open(keyFilePath, "r") as key_file:
         hexKey = key_file.read()
     byteKey = bytes.fromhex(hexKey)     #convert from hex to byte
