@@ -386,7 +386,7 @@ class FileTransferApp:
 
 
         # Button to Decrypt
-        decrypt_key_button = tk.Button(self.current_frame, text="Decrypt File", font=self.custom_font, command=self.compare_button)
+        decrypt_key_button = tk.Button(self.current_frame, text="Compare Files", font=self.custom_font, command=self.compare_button)
         decrypt_key_button.pack(pady=10)
 
         self.current_frame.pack()

@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import scrolledtext, filedialog
 
-class ChatWindow(tk.Toplevel):
+class ClientWindow(tk.Toplevel):
     shared_messages = []  # Shared data structure for messages
     server_chat = None
     client_chat = None
@@ -9,11 +9,6 @@ class ChatWindow(tk.Toplevel):
     def __init__(self, master, title):
         super().__init__(master.root)
         self.title(title)
-
-        if title == "Server":
-            ChatWindow.server_chat = self
-        elif title == "Client":
-            ChatWindow.client_chat = self
 
 
         # Create a text widget for the chat messages
@@ -39,8 +34,7 @@ class ChatWindow(tk.Toplevel):
         # Make the chat window unresizable
         self.resizable(width=False, height=False)
 
-    def send_message(self):
-        print(ChatWindow.server_chat, ChatWindow.client_chat.message_entry)
+    def send_message(self):            
         message = self.message_entry.get()
         if message:  # Check if the message is not empty
             sender_name = self.title()  # The sender will have his Chat Window's Title as his name
