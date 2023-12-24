@@ -11,9 +11,9 @@ def are_files_equal(file1_path, file2_path):
 
             # Compare the content
             if (content1 == content2):
-                return "The Two Files Are Identical."
+                return True
             else:
-                return "The Two Files Are Different."
+                return False
 
     except FileNotFoundError:
         return "One or both files not found."

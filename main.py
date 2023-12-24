@@ -14,6 +14,7 @@ from part3 import *
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from Certificate.certificate import *
+from ChatWindow import *
 import os
 
 
@@ -68,6 +69,9 @@ class FileTransferApp:
         certificate_button = tk.Button(self.current_frame, text="Generate Certificate", font=self.custom_font, command=self.create_certificate_frame)
         certificate_button.pack(pady=10)
 
+        chat_button = tk.Button(self.current_frame, text="Start Chat", font=self.custom_font, command=self.create_chat_frame)
+        chat_button.pack(pady=10)
+
         self.current_frame.pack()
 
     def create_sender_frame(self):
@@ -101,7 +105,7 @@ class FileTransferApp:
         back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_main_frame)
         back_button.pack(pady=10)
 
-        SignEnc_button = tk.Button(self.current_frame, text="Compare", font=self.custom_font, command=self.create_sign_frame)
+        SignEnc_button = tk.Button(self.current_frame, text="Compare", font=self.custom_font, command=self.create_compare_frame)
         SignEnc_button.pack(pady=10)
 
         Enc_button = tk.Button(self.current_frame, text="Decrypt File", font=self.custom_font, command=self.create_decrypt_options_frame)
@@ -348,7 +352,44 @@ class FileTransferApp:
         decrypt_key_button.pack(pady=10)
 
         self.current_frame.pack()
+    def create_compare_frame(self):
+        self.current_frame.destroy()
+        self.current_frame = tk.Frame(self.root)
 
+        # Section 1: Title and back button
+        label = tk.Label(self.current_frame, text="Compare between Original & Decrypted file", font=self.custom_font)
+        label.pack(pady=20)
+
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.create_receiver_frame)
+        back_button.pack(pady=10)
+
+        # Section 2: Uploading the encrypted symmetric key to be decrypted with RSA
+        self.symmetric_label = tk.Label(self.current_frame, text="Choose First File", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.symmetric_label.pack(pady=5)
+
+        # Section 3: Uploading the file to be decrypted with AES
+        choose_file_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_file)
+        choose_file_button.pack(pady=10)
+
+        self.selected_file_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
+        self.selected_file_label.pack(pady=10)
+
+        # Section 4: Uploading the encrypted symmetric key to be decrypted with RSA
+        self.symmetric_label = tk.Label(self.current_frame, text="Choose Second File", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.symmetric_label.pack(pady=5)
+
+        choose_key_button = tk.Button(self.current_frame, text="Choose File", font=self.custom_font, command=self.choose_key_file)
+        choose_key_button.pack(pady=10)
+
+        self.selected_key_label = tk.Label(self.current_frame, text="Selected File: None", font=self.custom_font)
+        self.selected_key_label.pack(pady=10)
+
+
+        # Button to Decrypt
+        decrypt_key_button = tk.Button(self.current_frame, text="Decrypt File", font=self.custom_font, command=self.compare_button)
+        decrypt_key_button.pack(pady=10)
+
+        self.current_frame.pack()
     def create_sign_frame(self):
         self.current_frame.destroy()
         self.current_frame = tk.Frame(self.root)
@@ -413,10 +454,10 @@ class FileTransferApp:
         self.selected_signature_label.pack(pady=10)
 
         # Choose a file that has the public key
-        self.choose_key_button = tk.Button(self.current_frame, text="Public Key File", font=self.custom_font, command=self.choose_key_file)
+        self.choose_key_button = tk.Button(self.current_frame, text="Public Key/Certificate File", font=self.custom_font, command=self.choose_key_file)
         self.choose_key_button.pack(pady=10)
 
-        self.selected_key_label = tk.Label(self.current_frame, text="Selected Key File: None", font=self.custom_font)
+        self.selected_key_label = tk.Label(self.current_frame, text="Selected Key/Certificate File: None", font=self.custom_font)
         self.selected_key_label.pack(pady=10)
 
         # Button to Decrypt
@@ -467,13 +508,13 @@ class FileTransferApp:
 
         # Section 4: To choose type of entry of Assymetric Key
         # Radio buttons for choosing key generation or manual entry for SYMMETRIC KEY
-        self.asymmetric_label = tk.Label(self.current_frame, text="Public Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
+        self.asymmetric_label = tk.Label(self.current_frame, text="Private Key", font=(self.custom_font[0], self.custom_font[1], 'bold'))
         self.asymmetric_label.pack(pady=5)
 
         self.key_choice_var_rsa = tk.IntVar(value=1)  # Set the default value to 1 (Generate Key)
         generate_key_radio = tk.Radiobutton(self.current_frame, text="Generate Key Pair", font=self.custom_font, variable=self.key_choice_var_rsa, value=1)
         generate_key_radio.pack(pady=5)
-        enter_key_radio = tk.Radiobutton(self.current_frame, text="Enter Public Key", font=self.custom_font, variable=self.key_choice_var_rsa, value=2)
+        enter_key_radio = tk.Radiobutton(self.current_frame, text="Enter Private Key", font=self.custom_font, variable=self.key_choice_var_rsa, value=2)
         enter_key_radio.pack(pady=5)
 
         # Choose a file that has the key
@@ -606,11 +647,11 @@ class FileTransferApp:
         frame5 = tk.Frame(self.current_frame)
         frame5.pack(side="top", pady=(10, 0), fill="x")
 
-        self.common_name = tk.Label(frame5, text="Common Name:")
-        self.common_name.pack(side="left", padx=(10, 5))
+        label5 = tk.Label(frame5, text="Common Name:")
+        label5.pack(side="left", padx=(10, 5))
 
-        self.organization = tk.Entry(frame5)
-        self.organization.pack(side="left", padx=(0, 10))
+        self.common_name = tk.Entry(frame5)
+        self.common_name.pack(side="left", padx=(0, 10))
 
         desc5 = tk.Label(self.current_frame, text="Ex: Ahmed")
         desc5.pack(side="top", pady=(0, 10), padx=10, anchor="w")
@@ -632,6 +673,37 @@ class FileTransferApp:
         # Submit button
         submit_button = tk.Button(self.current_frame, text="Generate Certificate", command=self.generate_certificate)
         submit_button.pack(side="top", pady=(10, 0))
+
+        self.current_frame.pack()
+
+    def create_chat_frame(self):
+        self.current_frame.destroy()
+        self.current_frame = tk.Frame(self.root)
+
+        label = tk.Label(self.current_frame, text="Chat Window", font=self.custom_font)
+        label.pack(pady=20)
+
+        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.destroy_chat_windows)
+        back_button.pack(pady=10)
+
+        label = tk.Label(self.current_frame, text="You are now in chat mode\nIt is a kind of chat simulation to show\nthe secure chat functionality", font=self.custom_font)
+        label.pack(pady=20)
+
+        # Create two independent chat windows
+        self.server_chat = ChatWindow(self, title="Server")
+        self.client_chat = ChatWindow(self, title="Client")
+
+        # Set the positions of the chat windows
+        screen_width = self.root.winfo_screenwidth()
+        window_width = 450  # Adjust the width as needed
+
+        # Position chat_window1 on the left side
+        self.server_chat.geometry(f"{window_width}x600+0+0")
+
+        # Position chat_window2 on the right side
+        self.client_chat.geometry(f"{window_width}x600+{screen_width - window_width}+0")
+
+        # Add code here to connect the chat windows through a server or other means
 
         self.current_frame.pack()
 
@@ -681,6 +753,14 @@ class FileTransferApp:
             messagebox.showerror("File Manager", "Please select required files")
             self.create_main_frame()
             return True
+    
+    def destroy_chat_windows(self):
+        # Destroy the chat windows when the Back button is pressed
+        self.server_chat.destroy()
+        self.client_chat.destroy()
+
+        # Navigate back to the main frame
+        self.create_main_frame()
     ########################################################################################################################
     ####################                            Security Functions                                  ####################
     ########################################################################################################################
@@ -841,9 +921,26 @@ class FileTransferApp:
 
         messagebox.showinfo("Success", "Encryption was successful.\n You will find the decrypted key at ./keys folder.\n Dec data in ./outputs.")
 
+    ###############################################################
+    ##  Compare between original and decrypted file you choose   ##
+    ###############################################################
+    def compare_button(self):
+        ## If user didnt upload first file, EXIT!
+        if self.file_not_exist(self.file_path):
+            return
+        
+        ## If user didnt upload second file, EXIT!
+        if self.file_not_exist(self.key_path):
+            return
+        
+        ## Comparing the files
+        if are_files_equal(self.file_path, self.key_path[0]):
+            messagebox.showinfo("Success", "The files contents are identical!")
+        else:
+            messagebox.showerror("Failed", "The files contents are different!")
 
     ################################
-    ##         To Sign Files      ##
+    ##        To Sign Files       ##
     ################################
     def sign_button(self):
         key_choice = self.key_choice_var.get() # To track if user wants to generate or enter a key
@@ -905,7 +1002,7 @@ class FileTransferApp:
         if verify_signature(message, signature_data, public_key):
             messagebox.showinfo("Signature", "Signature is verified succesfully and is valid!")
         else:
-            messagebox.showinfo("Signature", "Signature verification failed and isn't valid!")
+            messagebox.showerror("Signature", "Signature verification failed and isn't valid!")
 
     ###################################
     ## To Sign and Encrypt a message ##
@@ -1016,12 +1113,16 @@ class FileTransferApp:
     ## Certificate Generation ##
     ############################
     def generate_certificate(self):
-        key_choice = self.key_choice_var.get() # To track if user wants to generate or enter a key
-        
+        # Collecting values from Entry widgets
+        country_value = self.country.get()
+        state_or_province_value = self.state_or_province.get()
+        locality_value = self.locality.get()
+        organization_value = self.organization.get()
+        common_name_value = self.common_name.get()
 
-        ## If user didnt upload file, EXIT!
-        if self.file_not_exist(self.file_path):
-            return
+        user_info = [country_value, state_or_province_value, locality_value, organization_value, common_name_value]
+
+        key_choice = self.key_choice_var.get() # To track if user wants to generate or enter a key
         
         if key_choice == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
@@ -1048,19 +1149,18 @@ class FileTransferApp:
             self.create_aes_encrypt_frame()
             return
 
-        
         # Generate a self-signed X.509 certificate and private key
-        private_key, certificate = generate_self_signed_certificate(kys)
+        CA_private_key, CA_public_key, certificate = certification(private_key, user_info)
         
-        save_data_to_file(certificate, 'outputs/cert.pem')
+        save_key_to_file(certificate, 'keys/cert.pem')
+        messagebox.showinfo("Succesas", "Certification was successful!\nYou will find the certificate in keys (cert.pem)")
+        # cert = x509.load_pem_x509_certificate(certificate, default_backend())
         
-        cert = x509.load_pem_x509_certificate(certificate, default_backend())
-        
-        public_key = cert.public_key()
-        public_key_pem = public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo)
-        save_data_to_file(signature, f"outputs/{self.file}.bin")
+        # public_key = cert.public_key()
+        # public_key_pem = public_key.public_bytes(
+        # encoding=serialization.Encoding.PEM,
+        # format=serialization.PublicFormat.SubjectPublicKeyInfo)
+        # save_data_to_file(signature, f"outputs/{self.file}.bin")
 
 if __name__ == "__main__":
     root = tk.Tk()
