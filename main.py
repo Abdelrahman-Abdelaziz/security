@@ -1066,9 +1066,9 @@ class FileTransferApp:
         hexKey = binascii.hexlify(public_key).decode('utf-8')      #convert output to hexadecimal
         
         # Checks if the key is valid
-        if len(hexKey) != 900:
-            messagebox.showerror("Error","Please enter a valid public key")
-            return
+        # if len(hexKey) != 900:
+        #     messagebox.showerror("Error","Please enter a valid public key")
+        #     return
 
         # Verify the signature
         message = load_data_from_file(self.file_path)

@@ -112,34 +112,5 @@ def verify_self_signed_certificate(cert_data, ca_public_key):
     except Exception as e:
         print(f"Verification failed: {e}")
         return False
-    
 
-# if __name__ == "__main__":
-    
-#     kys = load_key_from_file('keys/private.pem')
-#     kkkkk = load_key_from_file('keys/public.pem')
-    
-#     # Generate a self-signed X.509 certificate and private key
-#     private_key, certificate = generate_self_signed_certificate(kys)
 
-#     # Print the private key
-#     print("Private Key:")
-#     print(private_key)
-
-#     # Print the certificate
-#     print("\nCertificate:")
-#     print(certificate)
-    
-#     save_data_to_file(certificate, 'outputs/cert.pem')
-    
-#     cert = x509.load_pem_x509_certificate(certificate, default_backend())
- 
-#     public_key = cert.public_key()
-#     public_key_pem = public_key.public_bytes(
-#     encoding=serialization.Encoding.PEM,
-#     format=serialization.PublicFormat.SubjectPublicKeyInfo)
-    
-#     print('\n')
-#     print(public_key_pem)
-#     print('\n')
-#     print(kkkkk)
