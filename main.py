@@ -710,7 +710,11 @@ class FileTransferApp:
 
     def run_client_gui(self):
         client_window = tk.Toplevel(self.root)
-        client_window.geometry("+600+0")  # Position on the far right
+
+        # Position on the right of the main window, far from the server window
+        x_position = self.root.winfo_x() + self.root.winfo_width() + 10
+        y_position = self.root.winfo_y()
+        client_window.geometry(f"+{x_position}+{y_position}")
 
         ChatClient(client_window)
 
