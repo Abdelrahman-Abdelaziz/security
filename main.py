@@ -832,7 +832,7 @@ class FileTransferApp:
         if len(hexKey) != 32:
             messagebox.showerror("Error","Please enter a file that has a 16byte key")
             return
-        messagebox.showinfo("Key Entered", f"Entered Key: {key}")
+        messagebox.showinfo("Key Entered", f"Entered Key: {hexKey}")
 
         # AES Decrypt
         ct = load_data_from_file(self.file_path)
@@ -857,7 +857,8 @@ class FileTransferApp:
         ## To get user's choice for Symmetric key
         if key_choice_aes == 1:  # Generate Key
             aes_key = get_random_bytes(16)
-            messagebox.showinfo("Key Generated", f"Generated AES Key:\n {aes_key}")
+            hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
+            messagebox.showinfo("Key Generated", f"Generated AES Key:\n {hexKey}")
             save_key_to_file(aes_key, 'keys/symKey.pem')
         elif key_choice_aes == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
@@ -873,7 +874,7 @@ class FileTransferApp:
             if len(hexKey) != 32:
                 messagebox.showerror("Error","Please enter a file that has a 16byte key")
                 return
-            messagebox.showinfo("Key Entered", f"Entered Key: {aes_key}")
+            messagebox.showinfo("Key Entered", f"Entered Key: {hexKey}")
 
 
         ## To get user's choice for Asymetric key
