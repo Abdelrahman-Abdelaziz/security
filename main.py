@@ -1281,13 +1281,7 @@ class FileTransferApp:
         
         save_key_to_file(certificate, 'keys/cert.pem')
         messagebox.showinfo("Success", "Certification was successful!\nYou will find the certificate in keys as \"cert.pem\"")
-        # cert = x509.load_pem_x509_certificate(certificate, default_backend())
-        
-        # public_key = cert.public_key()
-        # public_key_pem = public_key.public_bytes(
-        # encoding=serialization.Encoding.PEM,
-        # format=serialization.PublicFormat.SubjectPublicKeyInfo)
-        # save_data_to_file(signature, f"outputs/{self.file}.bin")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
