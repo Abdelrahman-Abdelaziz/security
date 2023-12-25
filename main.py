@@ -14,9 +14,11 @@ from part3 import *
 from cryptography.hazmat.primitives import serialization, hashes
 from cryptography.hazmat.primitives.asymmetric import padding
 from Certificate.certificate import *
-from ChatWindow import *
-import os
+from guiClient import *
+from guiServer import *
+from threading import Thread
 
+import os
 
 class FileTransferApp:
     def __init__(self, root):
@@ -692,23 +694,25 @@ class FileTransferApp:
         label = tk.Label(self.current_frame, text="You are now in chat mode\nIt is a kind of chat simulation to show\nthe secure chat functionality", font=self.custom_font)
         label.pack(pady=20)
 
-        # Create two independent chat windows
-        self.server_chat = ChatWindow(self, title="Server")
-        self.client_chat = ChatWindow(self, title="Client")
+        # Create a new thread for the server GUI
+        server_thread = Thread(target=self.run_server_gui)
+        server_thread.start()
 
-        # Set the positions of the chat windows
-        screen_width = self.root.winfo_screenwidth()
-        window_width = 450  # Adjust the width as needed
-
-        # Position chat_window1 on the left side
-        self.server_chat.geometry(f"{window_width}x600+0+0")
-
-        # Position chat_window2 on the right side
-        self.client_chat.geometry(f"{window_width}x600+{screen_width - window_width}+0")
-
-        # Add code here to connect the chat windows through a server or other means
+        # Create a new thread for the client GUI
+        client_thread = Thread(target=self.run_client_gui)
+        client_thread.start()
 
         self.current_frame.pack()
+
+    def run_server_gui(self):
+        server_window = tk.Toplevel(self.root)
+        ServerGUI(server_window)
+
+    def run_client_gui(self):
+        client_window = tk.Toplevel(self.root)
+        client_window.geometry("+600+0")  # Position on the far right
+
+        ChatClient(client_window)
 
     ########################################################################################################################
     ####################                            GUI HELP FUNCTIONS                                  ####################

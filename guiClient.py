@@ -13,6 +13,8 @@ from cryptography.hazmat.primitives.asymmetric import padding
 import os
 import tkinter as tk
 from tkinter import scrolledtext, messagebox
+from tkinter import filedialog
+
 import threading
 
 class ChatClient:
@@ -24,11 +26,25 @@ class ChatClient:
         self.message_log = scrolledtext.ScrolledText(master, height=15, width=60)
         self.message_log.pack(padx=10, pady=10)
 
-        self.input_entry = tk.Entry(master, width=50)
-        self.input_entry.pack(padx=10, pady=10)
+        # Section 1: Modified layout for message entry and send button
+        entry_frame = tk.Frame(master)
+        entry_frame.pack(pady=10)
 
-        send_button = tk.Button(master, text="Send", command=self.send_message)
-        send_button.pack(pady=10)
+        # Label for the left of the entry field
+        message_label = tk.Label(entry_frame, text="Enter Message:")
+        message_label.pack(side=tk.LEFT, padx=5)
+
+        # Entry field
+        self.input_entry = tk.Entry(entry_frame, width=40)
+        self.input_entry.pack(side=tk.LEFT, padx=5)
+
+        # Send button next to the entry field
+        send_button = tk.Button(entry_frame, text="Send", command=self.send_message)
+        send_button.pack(side=tk.LEFT, padx=5)
+
+        # Section 2: Uploading the file to be decrypted with AES
+        choose_file_button = tk.Button(master, text="Choose File", command=self.send_file)
+        choose_file_button.pack(pady=10)
 
         # Initialize client
         self.init_client()
@@ -59,24 +75,22 @@ class ChatClient:
         # Client receives the server's public key
         server_public_key_bytes = self.receive_data(self.client_socket)
 
+
         # Client receives the encrypted shared AES key from the server
         encrypted_shared_key = self.receive_data(self.client_socket)
 
         # Client decrypts the shared AES key using its private key
         decrypted_shared_key = rsa_decrypt(encrypted_shared_key, self.client_private_key)
 
+
         return decrypted_shared_key, server_public_key_bytes
 
     def send_message(self):
         # Take input from the user
-        message_or_filepath = self.input_entry.get()
+        message = self.input_entry.get()
 
-        if message_or_filepath:
-            if os.path.exists(message_or_filepath):  # Check if the input is a file path
-                self.send_file(message_or_filepath)
-            else:
-                self.send_text_message(message_or_filepath)
-
+        if message:
+            self.send_text_message(message)
             # Clear input entry
             self.input_entry.delete(0, tk.END)
 
@@ -88,13 +102,21 @@ class ChatClient:
         enc_combined_msg = aes_encrypt(combined_message, self.shared_key)
         self.client_socket.sendall(enc_combined_msg)
 
-    def send_file(self, filepath):
+    def choose_and_update_label(self, label_text):
+        file_path = filedialog.askopenfilename(title=f"Select a {label_text}", filetypes=[("All Files", "*.*")])
+        file = ""  
+        if file_path:
+            file = file_path.split("/")[-1]  # Extracting the file name from the path
+        return file_path
+    
+    def send_file(self):
+        self.filepath = self.choose_and_update_label("Selected File")
         try:
             # Read the file as binary
-            with open(filepath, 'rb') as file:
+            with open(self.filepath, 'rb') as file:
                 file_data = file.read()
 
-            subString = filepath.split(".")
+            subString = self.filepath.split(".")
             extension = subString[1] 
             while (len(extension) < 10):
                 extension += '0'
@@ -147,8 +169,3 @@ class ChatClient:
             if len(chunk) < 1024:
                 break  # Break the loop if we received less data than the buffer size, indicating the end of transmission
         return data
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    client_app = ChatClient(root)
-    root.mainloop()

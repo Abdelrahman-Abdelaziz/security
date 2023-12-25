@@ -24,13 +24,11 @@ class ServerGUI:
         self.master.title("Chat Server")
 
         self.received_messages_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=60, height=15)
-        self.received_messages_text.pack(padx=10, pady=10)
+        self.received_messages_text.pack(padx=10, pady=20)
 
-        self.start_server_button = tk.Button(self.master, text="Start Server", command=self.start_server)
-        self.start_server_button.pack(pady=10)
+        self.start_server()
 
     def start_server(self):
-        self.start_server_button.config(state=tk.DISABLED)
         threading.Thread(target=self.server_thread).start()
 
     def server_thread(self):
@@ -160,9 +158,3 @@ class ServerGUI:
     def append_message(self, message):
         self.received_messages_text.insert(tk.END, message + "\n")
         self.received_messages_text.yview(tk.END)
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = ServerGUI(root)
-    root.mainloop()
