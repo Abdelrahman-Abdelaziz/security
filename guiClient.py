@@ -23,7 +23,7 @@ class ChatClient:
         master.title("Chat Client")
 
         # GUI components
-        self.message_log = scrolledtext.ScrolledText(master, height=15, width=60)
+        self.message_log = scrolledtext.ScrolledText(master, height=15, width=60, state='disabled')
         self.message_log.pack(padx=10, pady=10)
 
         # Section 1: Modified layout for message entry and send button
@@ -62,7 +62,6 @@ class ChatClient:
         # Setup client socket
         self.client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.client_socket.connect((self.host, self.port))
-        print(f"Connected to server at {self.host}:{self.port}")
 
         # Perform handshake and get shared key
         self.shared_key, self.server_public_key = self.perform_client_handshake()
@@ -158,7 +157,10 @@ class ChatClient:
                 is_verified = verify_with_public_key(self.server_public_key, decrypted_hash, hashed_message)
 
                 if is_verified:
+                    self.message_log.config(state="normal")
                     self.message_log.insert(tk.END, f"Server: {decrypted_message.decode('utf-8')}\n")
+                    self.message_log.config(state="disabled")
+                    self.message_log.yview(tk.END)
                 else:
                     messagebox.showwarning("Verification Error", "Received unverified response from server.")
 

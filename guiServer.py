@@ -23,7 +23,7 @@ class ServerGUI:
         self.master = master
         self.master.title("Chat Server")
 
-        self.received_messages_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=60, height=15)
+        self.received_messages_text = scrolledtext.ScrolledText(self.master, wrap=tk.WORD, width=60, height=15, state='disabled')
         self.received_messages_text.pack(padx=10, pady=20)
 
         self.start_server()
@@ -160,5 +160,9 @@ class ServerGUI:
             return self.get_user_input()
 
     def append_message(self, message):
+        self.received_messages_text.config(state="normal")
         self.received_messages_text.insert(tk.END, message + "\n")
+        self.received_messages_text.config(state="disabled")
         self.received_messages_text.yview(tk.END)
+        
+        
