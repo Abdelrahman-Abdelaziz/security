@@ -784,7 +784,9 @@ class FileTransferApp:
             key = get_random_bytes(16)
             hexKey = binascii.hexlify(key).decode('utf-8')      #convert output to hexadecimal
             messagebox.showinfo("Key Generated", f"Generated Key: {hexKey}")
-            save_key_to_file(key, 'keys/symKey.pem')
+            keyfile_name = save_key_to_file(key, 'keys/symKey.pem')
+            messagebox.showinfo("Key Generated", f"The Generated Key is at keys folder as: \"{keyfile_name}\"")
+
         elif key_choice == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
@@ -805,9 +807,9 @@ class FileTransferApp:
         data = load_data_from_file(self.file_path) 
         encrypted_data = aes_encrypt(data, key)
         # print("Encrypted Data:", binascii.hexlify(encrypted_data).decode('utf-8'))  #convert output to hexadecimal
-        save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
+        encfile_name = save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
 
-        messagebox.showinfo("Success", f"Encryption was successful.\nIf you generated a key u will find it at keys folder.\nEnc data in outputs folder as \"{self.file}.enc\".")
+        messagebox.showinfo("Success", f"Encryption was successful.\nEnc data in outputs folder as \"{encfile_name}\".")
         
     ################################
     ## To DEcrypt files using AES ##
@@ -838,9 +840,9 @@ class FileTransferApp:
         ct = load_data_from_file(self.file_path)
         dec_data = aes_decrypt(ct, key)
         self.file = self.file.replace(".enc", "")
-        save_data_to_file(dec_data, f"outputs/{self.file}")
+        decfile_name = save_data_to_file(dec_data, f"outputs/{self.file}")
 
-        messagebox.showinfo("Success", f"Decryption was successful.\nDec data in outputs folder as \"{self.file}\".")
+        messagebox.showinfo("Success", f"Decryption was successful.\nDec data in outputs folder as \"{decfile_name}\".")
 
     
     ####################################################################
@@ -859,7 +861,9 @@ class FileTransferApp:
             aes_key = get_random_bytes(16)
             hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
             messagebox.showinfo("Key Generated", f"Generated AES Key:\n {hexKey}")
-            save_key_to_file(aes_key, 'keys/symKey.pem')
+            keyfile_name = save_key_to_file(aes_key, 'keys/symKey.pem')
+            messagebox.showinfo("Key Generated", f"The Generated Key is at keys folder as: \"{keyfile_name}\"")
+
         elif key_choice_aes == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
@@ -880,10 +884,13 @@ class FileTransferApp:
         ## To get user's choice for Asymetric key
         if key_choice_rsa == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
-            save_key_to_file(private_key, 'keys/private.pem')
-            save_key_to_file(public_key, 'keys/public.pem')
             messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
             messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
+            prikey_name = save_key_to_file(private_key, 'keys/private.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Private Key Generated", f"The Generated Private Key is in keys folder as: \"{prikey_name}\"")
+            messagebox.showinfo("Public Key Generated", f"The Generated Public Key is in keys folder as: \"{pubkey_name}\"")
+            
 
         elif key_choice_rsa == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
@@ -902,10 +909,11 @@ class FileTransferApp:
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
-            save_key_to_file(public_key, 'keys/public.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
 
             messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
             messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
+            messagebox.showinfo("Public Key Generated", f"The Generated Corresponding Public Key is in keys folder as: \"{pubkey_name}\"")
 
 
         # Load data from file to be encrypted
@@ -918,9 +926,10 @@ class FileTransferApp:
         encrypted_aes_key = rsa_encrypt(aes_key, public_key)
 
         # Save data and all keys
-        save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
-        save_key_to_file(encrypted_aes_key, 'keys/encrypted_aes_key.pem')
-        messagebox.showinfo("Success", f"Encryption was successful.\nYou will find the generated keys in keys folder.\nEnc data in outputs folder as \"{self.file}.enc\".")
+        encdata_file = save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
+        encaeskey_file = save_key_to_file(encrypted_aes_key, 'keys/encrypted_aes_key.pem')
+        messagebox.showinfo("Success", f"You will find the ecrypted aes_key file in keys folder as: \"{encaeskey_file}\".")
+        messagebox.showinfo("Success", f"Encryption was successful.\nEnc data in outputs folder as \"{encdata_file}\".")
 
     ####################################################################
     ## To DEcrypt files using AES and ENcrypt symmetric key using RSA ##
@@ -946,14 +955,15 @@ class FileTransferApp:
 
         # RSA Decrypt the AES Key
         dec_aes_key = rsa_decrypt(ct_aes_key, public_key)
-        save_key_to_file(dec_aes_key, 'keys/dec_aes_key.pem')
+        decaeskey_file = save_key_to_file(dec_aes_key, 'keys/dec_aes_key.pem')
+        messagebox.showinfo("Success", f"You will find the decrypted aes_key file in keys folder as: \"{decaeskey_file}\".")
 
         # AES Decrypt
         dec_data = aes_decrypt(ct, dec_aes_key)
         self.file = self.file.replace(".enc", "")
-        save_data_to_file(dec_data, f"outputs/{self.file}")
+        decdata_file = save_data_to_file(dec_data, f"outputs/{self.file}")
 
-        messagebox.showinfo("Success", f"Decryption was successful.\nYou will find the decrypted AES key in keys folder.\nDec data in outputs folder as \"{self.file}\".")
+        messagebox.showinfo("Success", f"Decryption was successful.\nDec data in outputs folder as \"{decdata_file}\".")
 
     ###############################################################
     ##  Compare between original and decrypted file you choose   ##
@@ -985,10 +995,13 @@ class FileTransferApp:
         
         if key_choice == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
-            save_key_to_file(private_key, 'keys/private.pem')
-            save_key_to_file(public_key, 'keys/public.pem')
             messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
             messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
+            prikey_name = save_key_to_file(private_key, 'keys/private.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Private Key Generated", f"The Generated Private Key is in keys folder as: \"{prikey_name}\"")
+            messagebox.showinfo("Public Key Generated", f"The Generated Public Key is in keys folder as: \"{pubkey_name}\"")
+            
 
         elif key_choice == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
@@ -1009,17 +1022,18 @@ class FileTransferApp:
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
-            save_key_to_file(public_key, 'keys/public.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
 
-            messagebox.showinfo("Private Key Entered", f"Entered Private Key:\n {private_key}")
-            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key:\n {public_key}")
+            messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
+            messagebox.showinfo("Public Key Generated", f"The Generated Corresponding Public Key is in keys folder as: \"{pubkey_name}\"")
 
 
         # Sign the message
         message = load_data_from_file(self.file_path)
         signature = sign_message(message, private_key)
-        save_data_to_file(signature, f"outputs/{self.file}.bin")
-        messagebox.showinfo("Success", f"File Signing was successful.\nYou will find any generated keys in keys folder.\nSignature is in outputs folder as \"{self.file}.bin\".")
+        signature_name = save_data_to_file(signature, f"outputs/{self.file}.bin")
+        messagebox.showinfo("Success", f"File Signing was successful.\nSignature is in outputs folder as \"{signature_name}\".")
 
 
     ##################################
@@ -1073,7 +1087,9 @@ class FileTransferApp:
             aes_key = get_random_bytes(16)
             hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
             messagebox.showinfo("Key Generated", f"Generated Key: {hexKey}")
-            save_key_to_file(aes_key, 'keys/symKey.pem')
+            keyfile_name = save_key_to_file(aes_key, 'keys/symKey.pem')
+            messagebox.showinfo("Key Generated", f"The Generated Key is at keys folder as: \"{keyfile_name}\"")
+
         elif key_choice_aes == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
@@ -1094,10 +1110,12 @@ class FileTransferApp:
         ## To get user's choice for Asymetric key
         if key_choice_rsa == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
-            save_key_to_file(private_key, 'keys/private.pem')
-            save_key_to_file(public_key, 'keys/public.pem')
             messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
-            messagebox.showinfo("Key Generated", f"Generated Key:\n {public_key}")
+            messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
+            prikey_name = save_key_to_file(private_key, 'keys/private.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Private Key Generated", f"The Generated Private Key is in keys folder as: \"{prikey_name}\"")
+            messagebox.showinfo("Public Key Generated", f"The Generated Public Key is in keys folder as: \"{pubkey_name}\"")
 
         elif key_choice_rsa == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
@@ -1117,10 +1135,11 @@ class FileTransferApp:
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
-            save_key_to_file(public_key, 'keys/public.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
 
             messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
-            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key:\n {public_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
+            messagebox.showinfo("Public Key Generated", f"The Generated Corresponding Public Key is in keys folder as: \"{pubkey_name}\"")
 
         
         # Load data from file to be encrypted
@@ -1137,8 +1156,8 @@ class FileTransferApp:
         encrypted_combined_message = aes_encrypt(combined_message, aes_key)
 
         # Save data and all keys
-        save_data_to_file(encrypted_combined_message, f"outputs/{self.file}.enc")
-        messagebox.showinfo("Success", f"File Signing & Encryption was successful.\nYou will find the keys in keys folder.\nEnc data in outputs as \"{self.file}.enc\".")
+        enccombined_file = save_data_to_file(encrypted_combined_message, f"outputs/{self.file}.enc")
+        messagebox.showinfo("Success", f"File Signing & Encryption was successful.\nEnc data in outputs as \"{enccombined_file}\".")
 
     ####################################################################
     ## To DEcrypt files using AES and ENcrypt symmetric key using RSA ##
@@ -1197,8 +1216,8 @@ class FileTransferApp:
             messagebox.showerror("Error", "Signature verification wasn't successful")
         # Saving file
         self.file = self.file.replace(".enc", "")
-        save_data_to_file(decrypted_message, f"outputs/{self.file}")
-        messagebox.showinfo("Success", f"File Verifying & Decryption was successful.\nDec data in outputs as \"{self.file}\".")
+        decmessage_file = save_data_to_file(decrypted_message, f"outputs/{self.file}")
+        messagebox.showinfo("Success", f"File Verifying & Decryption was successful.\nDec data in outputs as \"{decmessage_file}\".")
 
     ############################
     ## Certificate Generation ##
@@ -1217,10 +1236,12 @@ class FileTransferApp:
         
         if key_choice == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
-            save_key_to_file(private_key, 'keys/private.pem')
-            save_key_to_file(public_key, 'keys/public.pem')
             messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
             messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
+            prikey_name = save_key_to_file(private_key, 'keys/private.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
+            messagebox.showinfo("Private Key Generated", f"The Generated Private Key is in keys folder as: \"{prikey_name}\"")
+            messagebox.showinfo("Public Key Generated", f"The Generated Public Key is in keys folder as: \"{pubkey_name}\"")
 
         elif key_choice == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
@@ -1238,14 +1259,14 @@ class FileTransferApp:
                 return
 
 
-            # Extract and save the public key
+             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
-            save_key_to_file(public_key, 'keys/public.pem')
+            pubkey_name = save_key_to_file(public_key, 'keys/public.pem')
 
-            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
+            messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
             messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
-            messagebox.showinfo("Public Key", "Public key is saved in keys folder")
+            messagebox.showinfo("Public Key Generated", f"The Generated Corresponding Public Key is in keys folder as: \"{pubkey_name}\"")
 
 
         # Generate a self-signed X.509 certificate and private key

@@ -3,6 +3,8 @@ import binascii
 from Crypto.Random import get_random_bytes
 import os
 import re
+from datetime import datetime
+
 
 
 def are_files_equal(file1_path, file2_path):
@@ -23,14 +25,21 @@ def are_files_equal(file1_path, file2_path):
 
 def save_key_to_file(byteKey, keyFilePath):
     # Extract the directory and filename from the given file path
-    dirname = os.path.dirname(keyFilePath)
+    dirname, filename = os.path.split(keyFilePath)
+    
     # Check if the directory exists, create it if not
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-    with open(keyFilePath, 'w') as f:
-        hexKey = binascii.hexlify(byteKey).decode('utf-8')      #convert output to hexadecimal
+    # Add date and time to the filename
+    current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    new_filename = f"{current_datetime}_{filename}"
+    new_filepath = os.path.join(dirname, new_filename)
+
+    with open(new_filepath, 'w') as f:
+        hexKey = binascii.hexlify(byteKey).decode('utf-8')  # convert output to hexadecimal
         f.write(hexKey)
+    return new_filename
 
 def load_key_from_file(keyFilePath):
     with open(keyFilePath, "r") as key_file:
@@ -47,14 +56,20 @@ def load_data_from_file(filePath):
 
 def save_data_to_file(data, filePath):
     # Extract the directory and filename from the given file path
-    dirname = os.path.dirname(filePath)
+    dirname, filename = os.path.split(filePath)
 
     # Check if the directory exists, create it if not
     if not os.path.exists(dirname):
         os.makedirs(dirname)
 
-    with open(filePath, 'wb') as outputFile:
+    # Add date and time to the filename
+    current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+    new_filename = f"{current_datetime}_{filename}"
+    new_filepath = os.path.join(dirname, new_filename)
+
+    with open(new_filepath, 'wb') as outputFile:
         outputFile.write(data)
+    return new_filename
 
 def is_hexadecimal(data):
     # Use a regular expression to check if the string consists of valid hexadecimal characters
