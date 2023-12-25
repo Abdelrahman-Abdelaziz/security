@@ -1,7 +1,7 @@
 from cryptography import x509
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import rsa
+from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from datetime import datetime, timedelta
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
@@ -98,36 +98,48 @@ def certification(user_pri_key, user_info):
     return CA_private_key, CA_public_key, certificate
 
 
-    
-        
+def verify_self_signed_certificate(cert_data, ca_public_key):
+    try:
+        certificate = x509.load_pem_x509_certificate(cert_data, default_backend())
+        ca_public_key.verify(
+            certificate.signature,
+            certificate.tbs_certificate_bytes,
+            padding.PKCS1v15(),
+            certificate.signature_hash_algorithm,
+        )
+        print("Certificate is valid and self-signed.")
+        return True
+    except Exception as e:
+        print(f"Verification failed: {e}")
+        return False
     
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    kys = load_key_from_file('keys/private.pem')
-    kkkkk = load_key_from_file('keys/public.pem')
+#     kys = load_key_from_file('keys/private.pem')
+#     kkkkk = load_key_from_file('keys/public.pem')
     
-    # Generate a self-signed X.509 certificate and private key
-    private_key, certificate = generate_self_signed_certificate(kys)
+#     # Generate a self-signed X.509 certificate and private key
+#     private_key, certificate = generate_self_signed_certificate(kys)
 
-    # Print the private key
-    print("Private Key:")
-    print(private_key)
+#     # Print the private key
+#     print("Private Key:")
+#     print(private_key)
 
-    # Print the certificate
-    print("\nCertificate:")
-    print(certificate)
+#     # Print the certificate
+#     print("\nCertificate:")
+#     print(certificate)
     
-    save_data_to_file(certificate, 'outputs/cert.pem')
+#     save_data_to_file(certificate, 'outputs/cert.pem')
     
-    cert = x509.load_pem_x509_certificate(certificate, default_backend())
+#     cert = x509.load_pem_x509_certificate(certificate, default_backend())
+ 
+#     public_key = cert.public_key()
+#     public_key_pem = public_key.public_bytes(
+#     encoding=serialization.Encoding.PEM,
+#     format=serialization.PublicFormat.SubjectPublicKeyInfo)
     
-    public_key = cert.public_key()
-    public_key_pem = public_key.public_bytes(
-    encoding=serialization.Encoding.PEM,
-    format=serialization.PublicFormat.SubjectPublicKeyInfo)
-    
-    print('\n')
-    print(public_key_pem)
-    print('\n')
-    print(kkkkk)
+#     print('\n')
+#     print(public_key_pem)
+#     print('\n')
+#     print(kkkkk)
