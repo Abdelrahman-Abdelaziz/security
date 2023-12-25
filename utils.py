@@ -2,6 +2,8 @@ from base64 import b64encode, b64decode
 import binascii
 from Crypto.Random import get_random_bytes
 import os
+import re
+
 
 def are_files_equal(file1_path, file2_path):
     try:
@@ -31,10 +33,11 @@ def save_key_to_file(byteKey, keyFilePath):
         f.write(hexKey)
 
 def load_key_from_file(keyFilePath):
-    print(keyFilePath)
     with open(keyFilePath, "r") as key_file:
-        hexKey = key_file.read()
-    byteKey = bytes.fromhex(hexKey)     #convert from hex to byte
+        key_data = key_file.read()
+    if not is_hexadecimal(key_data.strip()):
+        return None
+    byteKey = bytes(int(key_data[i:i+2], 16) for i in range(0, len(key_data), 2))
     return byteKey
 
 def load_data_from_file(filePath):
@@ -52,3 +55,7 @@ def save_data_to_file(data, filePath):
 
     with open(filePath, 'wb') as outputFile:
         outputFile.write(data)
+
+def is_hexadecimal(data):
+    # Use a regular expression to check if the string consists of valid hexadecimal characters
+    return bool(re.match(r'^[0-9a-fA-F]+$', data))

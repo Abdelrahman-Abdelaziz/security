@@ -35,7 +35,7 @@ class FileTransferApp:
 
         # Use a custom font for labels and buttons
         self.custom_font = ("Arial", 12)
-
+        
         self.current_frame = None
         self.selected_file_label = None
         self.selected_signature_label = None
@@ -44,6 +44,9 @@ class FileTransferApp:
         self.file = None
         self.signature_path = None
         self.signature_file = None
+
+        # Initialize key_choice_var_rsa as an instance variable
+        self.key_choice_var_rsa = tk.IntVar(value=0)
 
         self.create_main_frame()
 
@@ -724,6 +727,7 @@ class FileTransferApp:
 
     def choose_and_update_label(self, label_widget, label_text):
         file_path = filedialog.askopenfilename(title=f"Select a {label_text}", filetypes=[("All Files", "*.*")])
+        file = ""  
         if file_path:
             file = file_path.split("/")[-1]  # Extracting the file name from the path
             label_widget.config(text=f"{label_text}: {file}")
@@ -740,18 +744,19 @@ class FileTransferApp:
             self.choose_key_button.config(state=tk.DISABLED)
             self.selected_key_label.config(state=tk.DISABLED)
 
+        # Update the state of the entry widget based on the selected radio button
         key_choice_rsa = self.key_choice_var_rsa.get()
-        if key_choice_rsa == 2:  # Enter Key option
-            self.choose_key2_button.config(state=tk.NORMAL)
-            self.selected_key2_label.config(state=tk.NORMAL)
-        else:
-            self.choose_key2_button.config(state=tk.DISABLED)
-            self.selected_key2_label.config(state=tk.DISABLED)
+        if key_choice_rsa != 0:
+            if key_choice_rsa == 2:  # Enter Key option
+                self.choose_key2_button.config(state=tk.NORMAL)
+                self.selected_key2_label.config(state=tk.NORMAL)
+            else:
+                self.choose_key2_button.config(state=tk.DISABLED)
+                self.selected_key2_label.config(state=tk.DISABLED)
 
     def file_not_exist(self, file_path):
-        if file_path is None:
+        if file_path is None or file_path == "":
             messagebox.showerror("File Manager", "Please select required files")
-            self.create_main_frame()
             return True
     
     def destroy_chat_windows(self):
@@ -777,17 +782,24 @@ class FileTransferApp:
         
         if key_choice == 1:  # Generate Key
             key = get_random_bytes(16)
-            messagebox.showinfo("Key Generated", f"Generated Key: {key}")
+            hexKey = binascii.hexlify(key).decode('utf-8')      #convert output to hexadecimal
+            messagebox.showinfo("Key Generated", f"Generated Key: {hexKey}")
             save_key_to_file(key, 'keys/symKey.pem')
         elif key_choice == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
+            # Loads data in uploaded key file and checks if it's hexa
             key = load_key_from_file(self.key_path[0])
-            messagebox.showinfo("Key Entered", f"Entered Key: {key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
+            if key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+            
+            hexKey = binascii.hexlify(key).decode('utf-8')      #convert output to hexadecimal
+            # Checks if the key is 16 bye long
+            if len(hexKey) != 32:
+                messagebox.showerror("Error","Please enter a file that has a 16byte AES key")
+                return
+            messagebox.showinfo("Key Entered", f"Entered Key: {hexKey}")
         
         # AES Encrypt    
         data = load_data_from_file(self.file_path) 
@@ -795,7 +807,7 @@ class FileTransferApp:
         # print("Encrypted Data:", binascii.hexlify(encrypted_data).decode('utf-8'))  #convert output to hexadecimal
         save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
 
-        messagebox.showinfo("Success", "Encryption was successful.\nIf you generated a key u will find it at ./keys folder.\nEnc data in ./outputs.")
+        messagebox.showinfo("Success", f"Encryption was successful.\nIf you generated a key u will find it at keys folder.\nEnc data in outputs folder as \"{self.file}.enc\".")
         
     ################################
     ## To DEcrypt files using AES ##
@@ -810,6 +822,16 @@ class FileTransferApp:
             return
         
         key = load_key_from_file(self.key_path[0])
+        if key == None:
+            messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+            return
+            
+        hexKey = binascii.hexlify(key).decode('utf-8')      #convert output to hexadecimal
+        
+        # Checks if the key is 16 bye long
+        if len(hexKey) != 32:
+            messagebox.showerror("Error","Please enter a file that has a 16byte key")
+            return
         messagebox.showinfo("Key Entered", f"Entered Key: {key}")
 
         # AES Decrypt
@@ -818,7 +840,7 @@ class FileTransferApp:
         self.file = self.file.replace(".enc", "")
         save_data_to_file(dec_data, f"outputs/{self.file}")
 
-        messagebox.showinfo("Success", "Decryption was successful.\nDec data in ./outputs.")
+        messagebox.showinfo("Success", f"Decryption was successful.\nDec data in outputs folder as \"{self.file}\".")
 
     
     ####################################################################
@@ -835,17 +857,23 @@ class FileTransferApp:
         ## To get user's choice for Symmetric key
         if key_choice_aes == 1:  # Generate Key
             aes_key = get_random_bytes(16)
-            messagebox.showinfo("Key Generated", f"Generated Key: {aes_key}")
+            messagebox.showinfo("Key Generated", f"Generated AES Key:\n {aes_key}")
             save_key_to_file(aes_key, 'keys/symKey.pem')
         elif key_choice_aes == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
             aes_key = load_key_from_file(self.key_path[0])
+            if aes_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+                
+            hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is 16 bye long
+            if len(hexKey) != 32:
+                messagebox.showerror("Error","Please enter a file that has a 16byte key")
+                return
             messagebox.showinfo("Key Entered", f"Entered Key: {aes_key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
 
 
         ## To get user's choice for Asymetric key
@@ -853,26 +881,31 @@ class FileTransferApp:
             private_key, public_key = generate_RSA_key_pair()
             save_key_to_file(private_key, 'keys/private.pem')
             save_key_to_file(public_key, 'keys/public.pem')
-            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
-            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+            messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
 
         elif key_choice_rsa == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
                 return
             private_key = load_key_from_file(self.key_path[0])
-
+            if private_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+                
+            hexKey = binascii.hexlify(private_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is 256 bye long
+            if len(hexKey) != 512:
+                messagebox.showerror("Error","Please enter a file that has a 256 byte key")
+                return
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
             save_key_to_file(public_key, 'keys/public.pem')
 
-            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
+            messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
             messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
-        
+
 
         # Load data from file to be encrypted
         data = load_data_from_file(self.file_path) 
@@ -886,7 +919,7 @@ class FileTransferApp:
         # Save data and all keys
         save_data_to_file(encrypted_data, f"outputs/{self.file}.enc")
         save_key_to_file(encrypted_aes_key, 'keys/encrypted_aes_key.pem')
-        messagebox.showinfo("Success", "Encryption was successful.\n You will find the keys at ./keys folder.\n Enc data in ./outputs.")
+        messagebox.showinfo("Success", f"Encryption was successful.\nYou will find the generated keys in keys folder.\nEnc data in outputs folder as \"{self.file}.enc\".")
 
     ####################################################################
     ## To DEcrypt files using AES and ENcrypt symmetric key using RSA ##
@@ -919,7 +952,7 @@ class FileTransferApp:
         self.file = self.file.replace(".enc", "")
         save_data_to_file(dec_data, f"outputs/{self.file}")
 
-        messagebox.showinfo("Success", "Encryption was successful.\n You will find the decrypted key at ./keys folder.\n Dec data in ./outputs.")
+        messagebox.showinfo("Success", f"Decryption was successful.\nYou will find the decrypted AES key in keys folder.\nDec data in outputs folder as \"{self.file}\".")
 
     ###############################################################
     ##  Compare between original and decrypted file you choose   ##
@@ -953,31 +986,40 @@ class FileTransferApp:
             private_key, public_key = generate_RSA_key_pair()
             save_key_to_file(private_key, 'keys/private.pem')
             save_key_to_file(public_key, 'keys/public.pem')
-            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
-            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+            messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
 
         elif key_choice == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
                 return
             private_key = load_key_from_file(self.key_path[0])
 
+            if private_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+                
+            hexKey = binascii.hexlify(private_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is valid
+            if len(hexKey) != 3348:
+                messagebox.showerror("Error","Please enter a valid private key")
+                return
+
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
             save_key_to_file(public_key, 'keys/public.pem')
 
-            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
-            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
+            messagebox.showinfo("Private Key Entered", f"Entered Private Key:\n {private_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key:\n {public_key}")
+
 
         # Sign the message
         message = load_data_from_file(self.file_path)
         signature = sign_message(message, private_key)
-        # print("Signature:", binascii.hexlify(signature).decode('utf-8'))
         save_data_to_file(signature, f"outputs/{self.file}.bin")
+        messagebox.showinfo("Success", f"File Signing was successful.\nYou will find any generated keys in keys folder.\nSignature is in outputs folder as \"{self.file}.bin\".")
+
 
     ##################################
     ##         To Verify Files      ##
@@ -995,6 +1037,16 @@ class FileTransferApp:
             return
         
         public_key = load_key_from_file(self.key_path[0])
+        if public_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+        hexKey = binascii.hexlify(public_key).decode('utf-8')      #convert output to hexadecimal
+        
+        # Checks if the key is valid
+        if len(hexKey) != 900:
+            messagebox.showerror("Error","Please enter a valid public key")
+            return
 
         # Verify the signature
         message = load_data_from_file(self.file_path)
@@ -1009,7 +1061,7 @@ class FileTransferApp:
     ###################################
     def sign_encrypt_button(self):
         key_choice_aes = self.key_choice_var.get() # To track if user wants to generate or enter a symmetric key
-        key_choice_rsa = self.key_choice_var_rsa.get() # To track if user wants to generate or enter a symmetric key
+        key_choice_rsa = self.key_choice_var_rsa.get() # To track if user wants to generate or enter an asymmetric key
 
         ## If user didnt upload file, EXIT!
         if self.file_not_exist(self.file_path):
@@ -1018,42 +1070,57 @@ class FileTransferApp:
         ## To get user's choice for Symmetric key
         if key_choice_aes == 1:  # Generate Key
             aes_key = get_random_bytes(16)
-            messagebox.showinfo("Key Generated", f"Generated Key: {aes_key}")
+            hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
+            messagebox.showinfo("Key Generated", f"Generated Key: {hexKey}")
             save_key_to_file(aes_key, 'keys/symKey.pem')
         elif key_choice_aes == 2:  # Use Entered Key
             if self.file_not_exist(self.key_path):
                 return
             aes_key = load_key_from_file(self.key_path[0])
-            messagebox.showinfo("Key Entered", f"Entered Key: {aes_key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
+            if public_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+            hexKey = binascii.hexlify(public_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is valid
+            if len(hexKey) != 32:
+                messagebox.showerror("Error","Please enter a file that has 16 byte AES key")
+                return
+            messagebox.showinfo("Key Entered", f"Entered Key: {hexKey}")
+
 
         ## To get user's choice for Asymetric key
         if key_choice_rsa == 1:  # Generate Key Pairs
             private_key, public_key = generate_RSA_key_pair()
             save_key_to_file(private_key, 'keys/private.pem')
             save_key_to_file(public_key, 'keys/public.pem')
-            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
-            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+            messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Key:\n {public_key}")
 
         elif key_choice_rsa == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
                 return
             private_key = load_key_from_file(self.key_path[0])
+            if public_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+            hexKey = binascii.hexlify(public_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is valid
+            if len(hexKey) != 3348:
+                messagebox.showerror("Error","Please enter a valid private key")
+                return
 
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
 
             save_key_to_file(public_key, 'keys/public.pem')
 
-            messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
-            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
+            messagebox.showinfo("Key Entered", f"Entered Private Key:\n {private_key}")
+            messagebox.showinfo("Public Key", f"Generated Corresponding Public Key:\n {public_key}")
+
         
         # Load data from file to be encrypted
         original_message = load_data_from_file(self.file_path) 
@@ -1070,7 +1137,7 @@ class FileTransferApp:
 
         # Save data and all keys
         save_data_to_file(encrypted_combined_message, f"outputs/{self.file}.enc")
-        messagebox.showinfo("Success", "File Signing & Encryption was successful.\nYou will find the keys at ./keys folder.\nEnc data in ./outputs.")
+        messagebox.showinfo("Success", f"File Signing & Encryption was successful.\nYou will find the keys in keys folder.\nEnc data in outputs as \"{self.file}.enc\".")
 
     ####################################################################
     ## To DEcrypt files using AES and ENcrypt symmetric key using RSA ##
@@ -1088,7 +1155,29 @@ class FileTransferApp:
         
         # Loading the keys for decryption process
         aes_key = load_key_from_file(self.key_path[0])
+        if aes_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+        hexKey = binascii.hexlify(aes_key).decode('utf-8')      #convert output to hexadecimal
+        
+        # Checks if the key is valid
+        if len(hexKey) != 32:
+            messagebox.showerror("Error","Please enter a valid public key")
+            return
+
         public_key = load_key_from_file(self.key2_path[0])
+        if public_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+        hexKey = binascii.hexlify(public_key).decode('utf-8')      #convert output to hexadecimal
+        
+        # Checks if the key is valid
+        if len(hexKey) != 900:
+            messagebox.showerror("Error","Please enter a valid public key")
+            return
+
 
         # Loading Decrypted data from file
         encrypted_combined_message = load_data_from_file(self.file_path)
@@ -1108,7 +1197,8 @@ class FileTransferApp:
         # Saving file
         self.file = self.file.replace(".enc", "")
         save_data_to_file(decrypted_message, f"outputs/{self.file}")
-        messagebox.showinfo("Success", "File Verifying & Decryption was successful.\nDec data in ./outputs.")
+        messagebox.showinfo("Success", f"File Verifying & Decryption was successful.\nDec data in outputs as \"{self.file}\".")
+
     ############################
     ## Certificate Generation ##
     ############################
@@ -1128,13 +1218,24 @@ class FileTransferApp:
             private_key, public_key = generate_RSA_key_pair()
             save_key_to_file(private_key, 'keys/private.pem')
             save_key_to_file(public_key, 'keys/public.pem')
-            messagebox.showinfo("Key Generated", f"Generated Key: {private_key}")
-            messagebox.showinfo("Key Generated", f"Generated Key: {public_key}")
+            messagebox.showinfo("Key Generated", f"Generated Private Key:\n {private_key}")
+            messagebox.showinfo("Key Generated", f"Generated Public Key:\n {public_key}")
 
         elif key_choice == 2:  # Use Entered Private Key
             if self.file_not_exist(self.key_path):
                 return
             private_key = load_key_from_file(self.key_path[0])
+            if private_key == None:
+                messagebox.showerror("Error","Please enter a file that is in hexadecimal format")
+                return
+        
+            hexKey = binascii.hexlify(private_key).decode('utf-8')      #convert output to hexadecimal
+            
+            # Checks if the key is valid
+            if len(hexKey) != 3348:
+                messagebox.showerror("Error","Please enter a valid private key")
+                return
+
 
             # Extract and save the public key
             public_key = RSA.import_key(private_key).publickey().export_key()
@@ -1144,16 +1245,13 @@ class FileTransferApp:
             messagebox.showinfo("Key Entered", f"Entered Private Key: {private_key}")
             messagebox.showinfo("Public Key", f"Generated Corresponding Public Key: {public_key}")
             messagebox.showinfo("Public Key", "Public key is saved in keys folder")
-        else:
-            messagebox.showerror("Error", "Please choose a key option.")
-            self.create_aes_encrypt_frame()
-            return
+
 
         # Generate a self-signed X.509 certificate and private key
         CA_private_key, CA_public_key, certificate = certification(private_key, user_info)
         
         save_key_to_file(certificate, 'keys/cert.pem')
-        messagebox.showinfo("Succesas", "Certification was successful!\nYou will find the certificate in keys (cert.pem)")
+        messagebox.showinfo("Success", "Certification was successful!\nYou will find the certificate in keys as \"cert.pem\"")
         # cert = x509.load_pem_x509_certificate(certificate, default_backend())
         
         # public_key = cert.public_key()
