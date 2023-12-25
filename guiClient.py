@@ -45,6 +45,9 @@ class ChatClient:
         # Section 2: Uploading the file to be decrypted with AES
         choose_file_button = tk.Button(master, text="Choose File", command=self.send_file)
         choose_file_button.pack(pady=10)
+        
+        choose_file_button = tk.Button(master, text="Terminate", command=self.terminate)
+        choose_file_button.pack(pady=10)
 
         # Initialize client
         self.init_client()
@@ -95,13 +98,16 @@ class ChatClient:
             self.input_entry.delete(0, tk.END)
 
     def send_text_message(self, message):
-        # This method sends a text message as before
+        if (message == 'exit'):
+            dType = b'exit'
+        else:
+            dType = b'text'
+            
         hashed_message = hash_message(message.encode('utf-8'))
         encrypted_hash = encrypt_hash_with_private_key(self.client_private_key, hashed_message)
-        combined_message = b'text' + message.encode('utf-8') + encrypted_hash
+        combined_message = dType + message.encode('utf-8') + encrypted_hash
         enc_combined_msg = aes_encrypt(combined_message, self.shared_key)
         self.client_socket.sendall(enc_combined_msg)
-
     def choose_and_update_label(self, label_text):
         file_path = filedialog.askopenfilename(title=f"Select a {label_text}", filetypes=[("All Files", "*.*")])
         file = ""  
@@ -169,3 +175,6 @@ class ChatClient:
             if len(chunk) < 1024:
                 break  # Break the loop if we received less data than the buffer size, indicating the end of transmission
         return data
+    
+    def terminate(self):
+        os._exit(0)

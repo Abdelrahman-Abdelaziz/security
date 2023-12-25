@@ -688,8 +688,7 @@ class FileTransferApp:
         label = tk.Label(self.current_frame, text="Chat Window", font=self.custom_font)
         label.pack(pady=20)
 
-        back_button = tk.Button(self.current_frame, text="Back", font=self.custom_font, command=self.destroy_chat_windows)
-        back_button.pack(pady=10)
+        
 
         label = tk.Label(self.current_frame, text="You are now in chat mode\nIt is a kind of chat simulation to show\nthe secure chat functionality", font=self.custom_font)
         label.pack(pady=20)

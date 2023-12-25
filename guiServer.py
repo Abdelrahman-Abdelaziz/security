@@ -59,6 +59,7 @@ class ServerGUI:
                     if (data_type == b'text'):
                         decrypted_message = decrypted_combined_message[4:-256]
                         decrypted_hash = decrypted_combined_message[-256:]
+                        
                     elif (data_type == b'file'):
                         ext = decrypted_combined_message[4:14].decode('utf-8')
                         while ('0' in ext):
@@ -66,6 +67,9 @@ class ServerGUI:
                         
                         decrypted_message = decrypted_combined_message[14:-256]
                         decrypted_hash = decrypted_combined_message[-256:]
+                        
+                    elif (data_type == b'exit'):
+                        os._exit(0)
                 else:
                     decrypted_message = b'Unable to decrypt message'
                     decrypted_hash = b'error with hash'
